@@ -1282,30 +1282,34 @@
       });
     });
 
-    // ---- A15:L45 바깥쪽 테두리만 얇은 선으로 ----
-    for (let row = 15; row <= 45; row++){
+    const totalRow = Math.max(r + 1, 46);
+    const itemsFirstRow = headerRow + 1;
+    const itemsLastRow = totalRow - 1;
+
+    // ---- 품목 영역 바깥쪽 테두리만 얇은 선으로 ----
+    for (let row = itemsFirstRow; row <= itemsLastRow; row++){
       for (let cc = 1; cc <= 12; cc++){
         const gc0 = ws.getRow(row).getCell(cc);
         const existing0 = gc0.border || {};
         gc0.border = {
-          top: row === 15 ? THIN : existing0.top,
-          bottom: row === 45 ? THIN : existing0.bottom,
+          top: row === itemsFirstRow ? THIN : existing0.top,
+          bottom: row === itemsLastRow ? THIN : existing0.bottom,
           left: cc === 1 ? THIN : existing0.left,
           right: cc === 12 ? THIN : existing0.right
         };
       }
     }
 
-    // ---- Q'ty / Unit Price / Total Amount / Remark 열 바깥쪽 테두리 (15~45행) ----
+    // ---- Q'ty / Unit Price / Total Amount / Remark 열 바깥쪽 테두리 ----
     const colGroups = [[8,8], [9,9], [10,10], [11,12]];
     colGroups.forEach(([c1, c2]) => {
-      for (let row = 15; row <= 45; row++){
+      for (let row = itemsFirstRow; row <= itemsLastRow; row++){
         for (let cc = c1; cc <= c2; cc++){
           const gc = ws.getRow(row).getCell(cc);
           const existing = gc.border || {};
           gc.border = {
-            top: row === 15 ? THIN : existing.top,
-            bottom: row === 45 ? THIN : existing.bottom,
+            top: row === itemsFirstRow ? THIN : existing.top,
+            bottom: row === itemsLastRow ? THIN : existing.bottom,
             left: cc === c1 ? THIN : existing.left,
             right: cc === c2 ? THIN : existing.right
           };
@@ -1314,7 +1318,6 @@
     });
 
     // ---- 합계 ----
-    const totalRow = Math.max(r + 1, 46);
     if (totalRow - r >= 3){
       const blankNoteRow = r + 1;
       const blankNote = cell('A'+blankNoteRow, '이하여백');
@@ -1366,39 +1369,41 @@
       }
       r++;
     });
-    ws.getRow(51).height = 48;
+    const footFirstRow = totalRow + 1;
+    const footLastRow = totalRow + 5;
+    ws.getRow(footLastRow).height = 48;
 
-    // ---- I47:L51 바깥쪽 테두리만 얇은 선으로 ----
-    for (let row = 47; row <= 51; row++){
+    // ---- 특기사항 영역(footFirstRow~footLastRow, I~L) 바깥쪽 테두리만 얇은 선으로 ----
+    for (let row = footFirstRow; row <= footLastRow; row++){
       for (let cc = 9; cc <= 12; cc++){
         const fc = ws.getRow(row).getCell(cc);
         const existingF = fc.border || {};
         fc.border = {
-          top: row === 47 ? THIN : existingF.top,
-          bottom: row === 51 ? THIN : existingF.bottom,
+          top: row === footFirstRow ? THIN : existingF.top,
+          bottom: row === footLastRow ? THIN : existingF.bottom,
           left: cc === 9 ? THIN : existingF.left,
           right: cc === 12 ? THIN : existingF.right
         };
       }
     }
 
-    // ---- A14:L51 전체 바깥쪽 굵은 테두리 ----
-    for (let row = 14; row <= 51; row++){
+    // ---- 표 전체(헤더~맨 아래 견적담당 행) 바깥쪽 굵은 테두리 ----
+    for (let row = headerRow; row <= footLastRow; row++){
       for (let cc = 1; cc <= 12; cc++){
         const oc = ws.getRow(row).getCell(cc);
         const existingO = oc.border || {};
         oc.border = {
-          top: row === 14 ? THICK : existingO.top,
-          bottom: row === 51 ? THICK : existingO.bottom,
+          top: row === headerRow ? THICK : existingO.top,
+          bottom: row === footLastRow ? THICK : existingO.bottom,
           left: cc === 1 ? THICK : existingO.left,
           right: cc === 12 ? THICK : existingO.right
         };
       }
     }
 
-    // ---- A47:L47 윗쪽만 이중선 테두리 ----
+    // ---- 유효기간 행(footFirstRow) 윗쪽만 이중선 테두리 ----
     for (let cc = 1; cc <= 12; cc++){
-      const dc = ws.getRow(47).getCell(cc);
+      const dc = ws.getRow(footFirstRow).getCell(cc);
       const existingD = dc.border || {};
       dc.border = Object.assign({}, existingD, { top: { style: 'double', color: { argb: 'FF1C2B39' } } });
     }
