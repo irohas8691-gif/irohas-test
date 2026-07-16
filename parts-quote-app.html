@@ -317,7 +317,8 @@
       <div class="pq-card">
         <div class="pq-card-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
           <span><span class="n">#</span>원가산정표 · 판매단가 현황</span>
-          <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input id="parts-search" type="text" placeholder="코드/부품명 검색" style="padding:7px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;min-width:170px;background:#fff;color:var(--ink);">
             <button class="pq-btn ghost small" id="btn-filter-skh">KTW-SKH</button>
             <button class="pq-btn ghost small" id="btn-filter-sec">KTW-SEC</button>
           </div>
@@ -480,6 +481,7 @@
   const KEY_SETTINGS = 'app-settings';
   let parts = [];
   let partsCodeFilter = null; // null=전체, 'KTW-SKH' | 'KTW-SEC' 등 코드 접두어
+  let partsSearchQuery = '';
   let quoteLines = []; // {partId, code, name, unitCost, unitPrice, qty, desc, remark}
   let quoteName = '';
   function defaultQuoteMeta(){
@@ -883,11 +885,17 @@
   function renderParts(){
     const tbody = $('#parts-tbody');
     tbody.innerHTML = '';
-    const list = partsCodeFilter ? parts.filter(p => (p.code||'').startsWith(partsCodeFilter)) : parts;
+    let list = partsCodeFilter ? parts.filter(p => (p.code||'').startsWith(partsCodeFilter)) : parts;
+    const q = partsSearchQuery.trim().toLowerCase();
+    if (q){
+      list = list.filter(p => (p.code||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q));
+    }
     $('#parts-empty').style.display = list.length ? 'none' : 'block';
-    $('#parts-empty').textContent = partsCodeFilter
-      ? `'${partsCodeFilter}' 코드로 시작하는 부품이 없습니다.`
-      : '등록된 부품이 없습니다. 위에서 부품을 추가하세요.';
+    $('#parts-empty').textContent = q
+      ? `'${partsSearchQuery}'(으)로 검색된 부품이 없습니다.`
+      : partsCodeFilter
+        ? `'${partsCodeFilter}' 코드로 시작하는 부품이 없습니다.`
+        : '등록된 부품이 없습니다. 위에서 부품을 추가하세요.';
     list.forEach(p => {
       const cost = costOf(p);
       const price = Number(p.price)||0;
@@ -951,6 +959,11 @@
     $('#btn-filter-sec').classList.toggle('filter-active', partsCodeFilter === 'KTW-SEC');
     renderParts();
   }
+
+  $('#parts-search').addEventListener('input', (e) => {
+    partsSearchQuery = e.target.value;
+    renderParts();
+  });
 
   $('#btn-filter-skh').addEventListener('click', () => toggleCodeFilter('KTW-SKH'));
   $('#btn-filter-sec').addEventListener('click', () => toggleCodeFilter('KTW-SEC'));
