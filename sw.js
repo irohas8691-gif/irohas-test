@@ -1,4 +1,4 @@
-const CACHE_NAME = 'parts-quote-app-v1';
+const CACHE_NAME = 'parts-quote-app-v2';
 const CORE_ASSETS = [
   './parts-quote-app.html',
   './manifest.json',
@@ -22,20 +22,18 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// 네트워크 우선: 온라인이면 항상 최신 파일을 받아오고, 오프라인일 때만 캐시된 파일을 보여줌
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const fetchPromise = fetch(event.request)
-        .then((networkRes) => {
-          if (networkRes && networkRes.status === 200){
-            const clone = networkRes.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return networkRes;
-        })
-        .catch(() => cached);
-      return cached || fetchPromise;
-    })
+    fetch(event.request)
+      .then((networkRes) => {
+        if (networkRes && networkRes.status === 200){
+          const clone = networkRes.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return networkRes;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
